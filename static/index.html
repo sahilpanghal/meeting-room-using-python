@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Internet Voice Call</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">📞</span>
+        <h1>PyVoice Calling</h1>
+      </div>
+      <div class="connection-badge" id="connectionBadge">
+        <span class="status-dot"></span>
+        <span id="connectionText">Ready</span>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Lobby / Room Configuration Card -->
+      <section class="card" id="roomCard">
+        <h2>Start or Join a Voice Call</h2>
+        <p class="subtitle">Enter a Room Name or generate a unique ID to connect with any device over the network or internet.</p>
+        
+        <div class="form-group">
+          <label for="roomIdInput">Room Name / ID</label>
+          <div class="input-with-button">
+            <input type="text" id="roomIdInput" placeholder="e.g. daily-standup or room-842" autocomplete="off" />
+            <button id="generateBtn" class="btn btn-secondary" title="Generate Random ID">🎲 Random</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="peerNameInput">Your Name (Optional)</label>
+          <input type="text" id="peerNameInput" placeholder="e.g. Sahil" />
+        </div>
+
+        <div class="actions-row">
+          <button id="joinBtn" class="btn btn-primary btn-large">
+            <span class="btn-icon">🎙️</span> Join Voice Call
+          </button>
+        </div>
+
+        <div id="shareLinkContainer" class="share-link-container hidden">
+          <label>Shareable Room Link:</label>
+          <div class="copy-box">
+            <input type="text" id="shareUrlInput" readonly />
+            <button id="copyUrlBtn" class="btn btn-outline">Copy Link</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Call Interface (Initially Hidden) -->
+      <section class="card call-card hidden" id="callCard">
+        <div class="call-header">
+          <div>
+            <h3 id="activeRoomTitle">Room: ...</h3>
+            <span class="call-timer" id="callTimer">00:00</span>
+          </div>
+          <button id="leaveBtn" class="btn btn-danger">
+            <span class="btn-icon">📵</span> Leave Call
+          </button>
+        </div>
+
+        <!-- Participants List -->
+        <div class="participants-grid" id="participantsGrid">
+          <!-- Local User Card -->
+          <div class="participant-card local-card" id="localParticipantCard">
+            <div class="avatar-wrapper">
+              <div class="avatar" id="localAvatar">You</div>
+              <div class="pulse-ring" id="localPulseRing"></div>
+            </div>
+            <div class="participant-info">
+              <span class="participant-name" id="localDisplayName">You (Host)</span>
+              <span class="participant-status" id="localMicStatus">Microphone Active</span>
+            </div>
+            <!-- Audio Visualizer Canvas -->
+            <canvas id="localVisualizer" class="audio-canvas" width="220" height="40"></canvas>
+          </div>
+
+          <!-- Remote peers will be dynamically inserted here -->
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+          <button id="toggleMicBtn" class="btn btn-control btn-active" title="Mute/Unmute Mic (Shortcut: M)">
+            <span class="control-icon" id="micIcon">🎤</span>
+            <span class="control-label" id="micLabel">Mute</span>
+          </button>
+
+          <button id="shareCallBtn" class="btn btn-control" title="Copy Invite Link">
+            <span class="control-icon">🔗</span>
+            <span class="control-label">Invite</span>
+          </button>
+
+          <button id="toggleDeafenBtn" class="btn btn-control" title="Mute incoming audio">
+            <span class="control-icon" id="deafenIcon">🔊</span>
+            <span class="control-label" id="deafenLabel">Deafen</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- How it Works & Architecture Info -->
+      <section class="card info-card">
+        <h3>💡 How This Internet Calling System Works</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <h4>1. Python Signaling Server</h4>
+            <p>Runs asynchronously on your Mac, managing room membership and securely relaying WebRTC handshake data (SDP offers/answers and ICE network candidates).</p>
+          </div>
+          <div class="info-item">
+            <h4>2. Direct Peer-to-Peer Audio</h4>
+            <p>Voice streams travel directly between devices using WebRTC (UDP/SRTP) encrypted end-to-end, with low latency.</p>
+          </div>
+          <div class="info-item">
+            <h4>3. STUN NAT Traversal</h4>
+            <p>Public STUN servers discover public IPs and ports so calls work seamlessly across different home routers, mobile data, and Wi-Fi networks.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Hidden audio elements container for remote streams -->
+    <div id="remoteAudioContainer" style="display: none;"></div>
+
+    <footer class="app-footer">
+      <p>Python WebRTC Internet Calling • Local Network &amp; Internet Ready</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# The primary WebRTC Internet Calling server runs on Python 3.9+ with ZERO external dependencies!
+# (Standard library only: asyncio, socket, json, hashlib, base64, mimetypes)
+
+# Optional dependencies for the CLI-based UDP socket voice client (in p2p_socket_calling/):
+sounddevice>=0.4.6
+numpy>=1.24.0
