@@ -96,8 +96,9 @@ class WebSocketClient:
 
 
 class SignalingServer:
-    def __init__(self, static_dir: str):
-        self.static_dir = static_dir
+    def __init__(self, root_dir: str):
+        self.root_dir = os.path.abspath(root_dir)
+        self.static_dir = os.path.join(self.root_dir, "static")
         self.rooms: Dict[str, Dict[str, WebSocketClient]] = {}
 
     def get_local_ip(self) -> str:
@@ -154,12 +155,10 @@ class SignalingServer:
 
         accept_val = base64.b64encode(hashlib.sha1((sec_key + WS_MAGIC_STRING).encode()).digest()).decode()
         response = (
-            "HTTP/1.1 101 Switching Protocols" + CRLLF if False else (
-                f"HTTP/1.1 101 Switching Protocols{CRLF}"
-                f"Upgrade: websocket{CRLF}"
-                f"Connection: Upgrade{CRLF}"
-                f"Sec-WebSocket-Accept: {accept_val}{CRLF}{CRLF}"
-            )
+            f"HTTP/1.1 101 Switching Protocols{CRLF}"
+            f"Upgrade: websocket{CRLF}"
+            f"Connection: Upgrade{CRLF}"
+            f"Sec-WebSocket-Accept: {accept_val}{CRLF}{CRLF}"
         )
         writer.write(response.encode("utf-8"))
         await writer.drain()
@@ -259,12 +258,17 @@ class SignalingServer:
 
         clean_path = path.split("?")[0].lstrip("/")
         if clean_path == "" or clean_path == "index.html":
-            file_path = os.path.join(self.static_dir, "index.html")
+            filename = "index.html"
         else:
-            file_path = os.path.join(self.static_dir, clean_path)
+            filename = clean_path
+
+        # Look in root_dir first, then static_dir
+        file_path = os.path.join(self.root_dir, filename)
+        if not os.path.exists(file_path):
+            file_path = os.path.join(self.static_dir, filename)
 
         file_path = os.path.abspath(file_path)
-        if not file_path.startswith(os.path.abspath(self.static_dir)):
+        if not (file_path.startswith(self.root_dir) or file_path.startswith(self.static_dir)):
             writer.write(b"HTTP/1.1 403 Forbidden" + DOUBLE_CRLF_B + b"Access Denied")
             await writer.drain()
             writer.close()
@@ -302,10 +306,7 @@ class SignalingServer:
 
 async def main(host: str = "0.0.0.0", port: int = 8000):
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    static_dir = os.path.join(base_dir, "static")
-    os.makedirs(static_dir, exist_ok=True)
-
-    server = SignalingServer(static_dir=static_dir)
+    server = SignalingServer(root_dir=base_dir)
     local_ip = server.get_local_ip()
 
     async def client_connected(reader, writer):
